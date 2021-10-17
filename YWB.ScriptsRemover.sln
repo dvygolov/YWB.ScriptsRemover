@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31702.278
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "YWB.ScriptsRemover", "YWB.ScriptsRemover.pyproj", "{A6212812-1419-45DF-B0A9-70FF011F0942}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A6212812-1419-45DF-B0A9-70FF011F0942}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6212812-1419-45DF-B0A9-70FF011F0942}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {290CF1B3-F7DD-439D-A2E8-F6DE654EFEF9}
+	EndGlobalSection
+EndGlobal
