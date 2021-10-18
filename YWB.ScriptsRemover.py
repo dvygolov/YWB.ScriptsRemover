@@ -121,7 +121,7 @@ for fname in files:
         raise
     finally:
         f.close()
-    with open(fname,'w') as f:
+    with open(fname,'w',encoding="utf-8") as f:
         f.write(html)
 
 print('All Done! Press any key to exit and... thank you for your support!')
