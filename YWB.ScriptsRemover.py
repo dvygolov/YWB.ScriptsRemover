@@ -77,7 +77,7 @@ for fname in files:
                 remove_all_scripts(soup)
             case '2':
                 modify_scripts(soup)
-        html = re.sub(php_sig, php_add, soup.prettify())
+        html = re.sub(php_sig, php_add, soup.prettify(formatter="html"))
     except:
         raise
     finally:
