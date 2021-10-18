@@ -12,8 +12,11 @@ def php_add(m):
     return php_elements.pop(0)
 
 def remove_all_scripts(soup):
-    for s in soup.select('script','noscript'):
-        print('Found script or noscript tag, removing...')
+    for s in soup.select('script'):
+        print('Found script tag, removing...')
+        s.extract()
+    for s in soup.select('noscript'):
+        print('Found noscript tag, removing...')
         s.extract()
 
 def modify_scripts(soup):
@@ -34,7 +37,7 @@ def modify_scripts(soup):
             print('Found JQuery tag, modifying...')
             s['src']=jquery
 
-print('HTML Scripts Remover ver. 0.2 by Yellow Web')
+print('HTML Scripts Remover ver. 0.2b by Yellow Web')
 print('If you like this script, PLEASE DONATE!')
 print("WebMoney: Z182653170916")
 print("Bitcoin: bc1qqv99jasckntqnk0pkjnrjtpwu0yurm0qd0gnqv")
