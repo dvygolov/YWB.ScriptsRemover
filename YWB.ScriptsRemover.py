@@ -37,7 +37,7 @@ def modify_scripts(soup):
             print('Found JQuery tag, modifying...')
             s['src']=jquery
 
-print('HTML Scripts Remover ver. 0.2b by Yellow Web')
+print('HTML Scripts Remover ver. 0.3a by Yellow Web')
 print('If you like this script, PLEASE DONATE!')
 print("WebMoney: Z182653170916")
 print("Bitcoin: bc1qqv99jasckntqnk0pkjnrjtpwu0yurm0qd0gnqv")
@@ -71,13 +71,17 @@ for fname in files:
     # Pre-parse HTML to remove all PHP elements
     html = re.sub(r'<\?.*?\?>', php_remove, html, flags=re.S+re.M)
     soup = BeautifulSoup(html, 'html.parser')
-    match menu:
-        case '1':
-            remove_all_scripts(soup)
-        case '2':
-            modify_scripts(soup)
-    html = re.sub(php_sig, php_add, soup.prettify())
-    f.close()
+    try:
+        match menu:
+            case '1':
+                remove_all_scripts(soup)
+            case '2':
+                modify_scripts(soup)
+        html = re.sub(php_sig, php_add, soup.prettify())
+    except:
+        raise
+    finally:
+        f.close()
     with open(fname,'w') as f:
         f.write(html)
 
