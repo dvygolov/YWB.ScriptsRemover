@@ -101,7 +101,7 @@ menu = input()
 
 for fname in files:
     print(f'Processing {fname}...')
-    f = open(fname,'r')
+    f = open(fname,'r',encoding='utf-8')
     html = f.read()
     # Pre-parse HTML to remove all PHP elements
     html = re.sub(r'<\?.*?\?>', php_remove, html, flags=re.S + re.M)
