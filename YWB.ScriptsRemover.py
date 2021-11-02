@@ -1,7 +1,5 @@
-import os
-import time
-import re
-from bs4 import BeautifulSoup, Comment
+import sys, os, time, re, chardet
+from bs4 import BeautifulSoup, Comment, UnicodeDammit
 from urllib.parse import urlparse
 
 jquery = "//ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" #Change JQuery version if you need
@@ -72,15 +70,20 @@ def modify_scripts(soup):
             print(f'Found local JQuery {s.get("src")}, modifying...')
             s['src'] = jquery
 
-print('HTML Scripts Remover ver. 0.4a by Yellow Web')
+print('HTML Scripts Remover ver. 0.5b by Yellow Web')
 print('If you like this script, PLEASE DONATE!')
 print("WebMoney: Z182653170916")
 print("Bitcoin: bc1qqv99jasckntqnk0pkjnrjtpwu0yurm0qd0gnqv")
 print("Ethereum: 0xBC118D3FDE78eE393A154C29A4545c575506ad6B")
 print()
-time.sleep(5)
+time.sleep(3)
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+if len(sys.argv)>1:
+    dir_path=sys.argv[1]
+else:
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+print(f"Working directory: {dir_path}")
+
 files = []
 for root, dirnames, filenames in os.walk(dir_path):
     for filename in filenames:
@@ -88,9 +91,11 @@ for root, dirnames, filenames in os.walk(dir_path):
             fname = os.path.join(root, filename)
             print('Found file: {}'.format(fname))
             files.append(fname)
-if files.count == 0:
+if len(files)== 0:
     print('No HTML/PHP files found! Start script in a directory WITH HTML/PHP files!')
-    exit
+    sys.exit()
+else:
+    print(f"Found {len(files)} HTML/PHP files!")
 
 
 print('What do you want to do?')
@@ -101,12 +106,15 @@ menu = input()
 
 for fname in files:
     print(f'Processing {fname}...')
-    f = open(fname,'r',encoding='utf-8')
-    html = f.read()
-    # Pre-parse HTML to remove all PHP elements
-    html = re.sub(r'<\?.*?\?>', php_remove, html, flags=re.S + re.M)
-    soup = BeautifulSoup(html, 'html.parser')
     try:
+        with open(fname, 'rb') as detect_file_encoding:
+            detection = chardet.detect(detect_file_encoding.read())
+        print('Detected encoding:', detection)
+        with open(fname, encoding=detection['encoding'],errors='ignore') as f:
+            html = f.read()
+        # Pre-parse HTML to remove all PHP elements
+        html = re.sub(r'<\?.*?\?>', php_remove, html, flags=re.S + re.M)
+        soup = BeautifulSoup(html, 'html.parser')
         match menu:
             case '1':
                 remove_all_scripts(soup)
@@ -118,7 +126,7 @@ for fname in files:
             comment.extract()
         html = re.sub(php_sig, php_add, soup.prettify(formatter="html"))
     except:
-        raise
+        print(f"Error processing file {fname}! Skipping...")
     finally:
         f.close()
     with open(fname,'w',encoding="utf-8") as f:
