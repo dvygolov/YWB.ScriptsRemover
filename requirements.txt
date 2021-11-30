@@ -1,0 +1,6 @@
+beautifulsoup4==4.10.0
+bs4==0.0.1
+chardet==4.0.0
+pip==21.3
+setuptools==57.4.0
+soupsieve==2.2.1

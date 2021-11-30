@@ -1,5 +1,5 @@
 import sys, os, time, re, chardet
-from bs4 import BeautifulSoup, Comment, UnicodeDammit
+from bs4 import BeautifulSoup, Comment
 from urllib.parse import urlparse
 
 jquery = "//ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" #Change JQuery version if you need
@@ -56,6 +56,10 @@ def modify_scripts(soup):
     for s in soup.select('noscript'):
         print('Found noscript tag, removing...')
         s.extract()
+    googlemeta = soup.find_all("meta", attrs={"name":"google-site-verification"})
+    for tag in googlemeta:
+        print('Found google meta tag, removing...')
+        tag.extract()
     for s in soup.select('script'):
         if is_facebook_tag(s):
             print('Found FB pixel\'s tag, removing...')
@@ -69,8 +73,8 @@ def modify_scripts(soup):
         elif is_local_jquery(s.get('src')):
             print(f'Found local JQuery {s.get("src")}, modifying...')
             s['src'] = jquery
-
-print('HTML Scripts Remover ver. 0.5b by Yellow Web')
+            
+print('HTML Scripts Remover ver. 0.5c by Yellow Web')
 print('If you like this script, PLEASE DONATE!')
 print("WebMoney: Z182653170916")
 print("Bitcoin: bc1qqv99jasckntqnk0pkjnrjtpwu0yurm0qd0gnqv")
@@ -101,7 +105,7 @@ else:
 print('What do you want to do?')
 print('1.Remove ALL scripts')
 print('2.Remove Facebook and Google scripts and change JQuery to CDN')
-print('Enter your choice:',end='')
+print('Enter your choice: ',end='')
 menu = input()
 
 for fname in files:
@@ -120,13 +124,14 @@ for fname in files:
                 remove_all_scripts(soup)
             case '2':
                 modify_scripts(soup)
+                
         print('Removing all HTML comments...')
         comments = soup.findAll(text=lambda text:isinstance(text, Comment))
         for comment in comments:
             comment.extract()
         html = re.sub(php_sig, php_add, soup.prettify(formatter="html"))
-    except:
-        print(f"Error processing file {fname}! Skipping...")
+    except Exception as e:
+        print(f"Error processing file {fname}!{e} Skipping...")
     finally:
         f.close()
     with open(fname,'w',encoding="utf-8") as f:
