@@ -35,6 +35,8 @@ def is_google_tag(tag):
         return False
     if "gtag('config" in tag.string:
         return True
+    if "googletagmanager" in tag.string:
+        return True
     if tag.get('src') == None:
         return False
     if "googletagmanager" in tag.get('src'):
@@ -74,11 +76,21 @@ def modify_scripts(soup):
             print(f'Found local JQuery {s.get("src")}, modifying...')
             s['src'] = jquery
             
-print('HTML Scripts Remover ver. 0.5c by Yellow Web')
+print()
+print('                      HTML Scripts Remover v.0.6 ')
+print('   _            __     __  _ _             __          __  _     ')
+print('  | |           \ \   / / | | |            \ \        / / | |    ')
+print('  | |__  _   _   \ \_/ /__| | | _____      _\ \  /\  / /__| |__  ')
+print("  | '_ \| | | |   \   / _ \ | |/ _ \ \ /\ / /\ \/  \/ / _ \ '_ \ ")
+print('  | |_) | |_| |    | |  __/ | | (_) \ V  V /  \  /\  /  __/ |_) |')
+print('  |_.__/ \__, |    |_|\___|_|_|\___/ \_/\_/    \/  \/ \___|_.__/ ')
+print('          __/ |                                                  ')
+print('         |___/             https://yellowweb.top                 ')
+print()
 print('If you like this script, PLEASE DONATE!')
-print("WebMoney: Z182653170916")
-print("Bitcoin: bc1qqv99jasckntqnk0pkjnrjtpwu0yurm0qd0gnqv")
-print("Ethereum: 0xBC118D3FDE78eE393A154C29A4545c575506ad6B")
+print('WebMoney: Z182653170916')
+print('Bitcoin: bc1qqv99jasckntqnk0pkjnrjtpwu0yurm0qd0gnqv')
+print('Ethereum: 0xBC118D3FDE78eE393A154C29A4545c575506ad6B')
 print()
 time.sleep(3)
 
