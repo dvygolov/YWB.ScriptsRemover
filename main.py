@@ -1,4 +1,6 @@
-import sys, os, time, re, chardet
+import time, re, chardet
+from copyright import show
+from files import get_files
 from bs4 import BeautifulSoup, Comment, UnicodeDammit
 from urllib.parse import urlparse
 
@@ -57,52 +59,33 @@ def modify_scripts(soup):
         print('Found noscript tag, removing...')
         s.extract()
     for s in soup.select('script'):
-        if is_facebook_tag(s):
-            print('Found FB pixel\'s tag, removing...')
-            s.extract()
-        elif is_yandex_tag(s):
-            print('Found Yandex Metrika\'s tag, removing...')
-            s.extract()
-        elif is_google_tag(s):
-            print('Found Google tag, removing...')
-            s.extract()
-        elif is_local_jquery(s.get('src')):
-            print(f'Found local JQuery {s.get("src")}, modifying...')
-            s['src'] = jquery
+        match s:
+            case is_facebook_tag(s):
+                print('Found FB pixel\'s tag, removing...')
+                s.extract()
+                break
+            case is_yandex_tag(s):
+                print('Found Yandex Metrika\'s tag, removing...')
+                s.extract()
+                break
+            case is_google_tag(s):
+                print('Found Google tag, removing...')
+                s.extract()
+                break
+            case is_local_jquery(s.get('src')):
+                print(f'Found local JQuery {s.get("src")}, modifying...')
+                s['src'] = jquery
+                break
 
-print('HTML Scripts Remover ver. 0.5b by Yellow Web')
-print('If you like this script, PLEASE DONATE!')
-print("WebMoney: Z182653170916")
-print("Bitcoin: bc1qqv99jasckntqnk0pkjnrjtpwu0yurm0qd0gnqv")
-print("Ethereum: 0xBC118D3FDE78eE393A154C29A4545c575506ad6B")
-print()
-time.sleep(3)
-
-if len(sys.argv)>1:
-    dir_path=sys.argv[1]
-else:
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-print(f"Working directory: {dir_path}")
-
-files = []
-for root, dirnames, filenames in os.walk(dir_path):
-    for filename in filenames:
-        if filename.endswith('.html') or filename.endswith('.htm') or filename.endswith('.php'):
-            fname = os.path.join(root, filename)
-            print('Found file: {}'.format(fname))
-            files.append(fname)
-if len(files)== 0:
-    print('No HTML/PHP files found! Start script in a directory WITH HTML/PHP files!')
-    sys.exit()
-else:
-    print(f"Found {len(files)} HTML/PHP files!")
-
+show()
+files = get_files()
 
 print('What do you want to do?')
 print('1.Remove ALL scripts')
 print('2.Remove Facebook and Google scripts and change JQuery to CDN')
-print('Enter your choice:',end='')
-menu = input()
+print('3.Remove unused files (CSS,images and so on)')
+print('4.Add form inputs (from form.html file)')
+menu = input('Enter your choice(s):')
 
 for fname in files:
     print(f'Processing {fname}...')
@@ -118,12 +101,18 @@ for fname in files:
         match menu:
             case '1':
                 remove_all_scripts(soup)
+                break
             case '2':
                 modify_scripts(soup)
+                break
+            case '3':
+                break
+
         print('Removing all HTML comments...')
         comments = soup.findAll(text=lambda text:isinstance(text, Comment))
         for comment in comments:
             comment.extract()
+        #return all PHP elements to their places
         html = re.sub(php_sig, php_add, soup.prettify(formatter="html"))
     except:
         print(f"Error processing file {fname}! Skipping...")
