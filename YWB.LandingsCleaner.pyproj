@@ -3,13 +3,14 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>a6212812-1419-45df-b0a9-70ff011f0942</ProjectGuid>
-    <ProjectHome>.</ProjectHome>
+    <ProjectHome>
+    </ProjectHome>
     <StartupFile>main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>YWB.ScriptsRemover</Name>
+    <Name>YWB.LandingsCleaner</Name>
     <RootNamespace>YWB.ScriptsRemover</RootNamespace>
     <IsWindowsApplication>False</IsWindowsApplication>
     <InterpreterId>Global|PythonCore|3.10</InterpreterId>
@@ -36,7 +37,7 @@
   <ItemGroup>
     <Content Include=".gitattributes" />
     <Content Include=".gitignore" />
-    <Content Include="form.html" />
+    <Content Include="settings.json" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

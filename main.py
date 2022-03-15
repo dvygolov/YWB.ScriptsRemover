@@ -1,10 +1,9 @@
-import time, re, chardet
+import re, chardet
 from copyright import show
 from files import get_files
-from bs4 import BeautifulSoup, Comment, UnicodeDammit
+from bs4 import BeautifulSoup, BeautifulStoneSoup, Comment
 from urllib.parse import urlparse
 
-jquery = "//ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" #Change JQuery version if you need
 
 php_sig = '!!!PHP!!!'
 php_elements = []
@@ -54,7 +53,7 @@ def is_yandex_tag(tag):
     if "mc.yandex.ru" in tag.string:
         return True
 
-def modify_scripts(soup):
+def modify_scripts(soup:BeautifulSoup):
     for s in soup.select('noscript'):
         print('Found noscript tag, removing...')
         s.extract()
@@ -77,14 +76,28 @@ def modify_scripts(soup):
                 s['src'] = jquery
                 break
 
+
+def change_offer(soup:BeautifulSoup,s:json):
+    currentOffer=input('Current offer name:')
+    newOffer=input('New offer name:')
+
+    for form in soup.select('form'):
+        for inpt in form.select('input'):
+            if not inpt.has_attr('name') or inpt['name'] not in ['name','phone','tel']:
+                inpt.extract()
+        for inpt in s.inputs:
+            newInput=soup.new_tag('input',attrs=inpt)
+            form.insert(0,newInput)
+
+
+
 show()
 files = get_files()
 
 print('What do you want to do?')
 print('1.Remove ALL scripts')
 print('2.Remove Facebook and Google scripts and change JQuery to CDN')
-print('3.Remove unused files (CSS,images and so on)')
-print('4.Add form inputs (from form.html file)')
+print('3.Add form inputs and change offer')
 menu = input('Enter your choice(s):')
 
 for fname in files:
@@ -101,12 +114,10 @@ for fname in files:
         match menu:
             case '1':
                 remove_all_scripts(soup)
-                break
             case '2':
                 modify_scripts(soup)
-                break
             case '3':
-                break
+                change_offer(soup)
 
         print('Removing all HTML comments...')
         comments = soup.findAll(text=lambda text:isinstance(text, Comment))
@@ -114,13 +125,11 @@ for fname in files:
             comment.extract()
         #return all PHP elements to their places
         html = re.sub(php_sig, php_add, soup.prettify(formatter="html"))
-    except:
-        print(f"Error processing file {fname}! Skipping...")
+    except Exception as e:
+        print(f"Error processing file {fname}! Skipping... Error: {e}")
     finally:
         f.close()
     with open(fname,'w',encoding="utf-8") as f:
         f.write(html)
 
 print('All Done! Press any key to exit and... thank you for your support!')
-
-

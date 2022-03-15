@@ -1,0 +1,20 @@
+{
+  "jquery": "//ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js",
+  "inputs": [
+    {
+      "type": "hidden",
+      "name": "sub1",
+      "value": "{subid}"
+    },
+    {
+      "type": "hidden",
+      "name": "px",
+      "value": "{px}"
+    },
+    {
+      "type": "hidden",
+      "name": "country",
+      "value": "{country_code}"
+    }
+  ]
+}
