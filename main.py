@@ -85,7 +85,7 @@ def change_offer(soup:BeautifulSoup,s:json):
         for inpt in form.select('input'):
             if not inpt.has_attr('name') or inpt['name'] not in ['name','phone','tel']:
                 inpt.extract()
-        for inpt in s.inputs:
+        for inpt in s['inputs']:
             newInput=soup.new_tag('input',attrs=inpt)
             form.insert(0,newInput)
 
