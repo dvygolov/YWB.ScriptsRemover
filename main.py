@@ -71,51 +71,66 @@ def is_yandex_tag(tag):
     if "mc.yandex.ru" in tag.string:
         return True
 
-def modify_scripts(soup:BeautifulSoup):
+def modify_scripts(soup:BeautifulSoup,settings:SoftSettings):
     for s in soup.select('noscript'):
         print('Found noscript tag, removing...')
         s.extract()
     for s in soup.select('script'):
-        match s:
-            case is_facebook_tag(s):
-                print('Found FB pixel\'s tag, removing...')
-                s.extract()
-            case is_yandex_tag(s):
-                print('Found Yandex Metrika\'s tag, removing...')
-                s.extract()
-            case is_google_tag(s):
-                print('Found Google tag, removing...')
-                s.extract()
-            case is_local_jquery(s.get('src')):
-                print(f'Found local JQuery {s.get("src")}, modifying...')
-                s['src'] = jquery
+        if is_facebook_tag(s):
+            print('Found FB pixel\'s tag, removing...')
+            s.extract()
+        elif is_yandex_tag(s):
+            print('Found Yandex Metrika\'s tag, removing...')
+            s.extract()
+        elif is_google_tag(s):
+            print('Found Google tag, removing...')
+            s.extract()
+        elif is_local_jquery(s.get('src')):
+            print(f'Found local JQuery {s.get("src")}, modifying...')
+            s['src'] = settings.jquery
 
 
-def change_offer(soup:BeautifulSoup,s:SoftSettings)->str:
+def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
+
+    htm=soup.find('html')
+    if 'data-scrapbook-create' in htm.attrs:
+        del htm.attrs['data-scrapbook-create']
+    if 'data-scrapbook-source' in htm.attrs:
+        del htm.attrs['data-scrapbook-source']
+    if 'lang' in htm.attrs:
+        defaultCountry=htm['lang'].upper()
+
+
     currentOffer=input('Current offer name:')
-    newOffer=input('New offer name:')
-    country=input('Enter country code:')
+    newOffer=input('New offer name (Enter if the same):') or currentOffer
+    
+    country=input(f'Enter country code (or {defaultCountry} if Enter):') or defaultCountry
 
     formId='#form'
     for form in soup.select('form'):
         if 'id' in form.attrs:
+            print('Found form ID!')
             formId=f"#{form['id']}"
         print('Removing unnecessary inputs...')
         for inpt in form.select('input'):
             if not inpt.has_attr('name') or inpt['name'] not in ['name','phone','tel']:
                 inpt.extract()
         print('Adding necessary inputs...')
-        for inpt in s.inputs:
+        for inpt in settings.inputs:
             newInput=soup.new_tag('input',attrs=inpt)
             form.insert(0,newInput)
         print('Changing form action...')
         form['action']=f'../common/order/{country.lower()}/{newOffer.lower()}.php'
         print('Changing product images...')
         for img in soup.findAll('img'):
-            if 'product.png' in img['src']:
-                print('Found product image!')
+            m=re.match('product.*\.png', img['src'])
+            if m!=None:
+                imgName=m.group()
+                print(f'Found product image:{imgName}')
                 img['src']=f'../common/products/{newOffer.lower()}.png'
         for link in soup.findAll('a'):
+            if 'onclick' in link.attrs:
+                del link['onclick']
             if 'http' in link['href']:
                 print('Found link with absolute url, changing...')
                 link['href']=formId
@@ -157,9 +172,10 @@ def main():
                     remove_all_scripts(soup)
                     html=soup.prettify(formatter="html")
                 case '2':
-                    modify_scripts(soup)
+                    modify_scripts(soup,s)
                     html=soup.prettify(formatter="html")
                 case '3':
+                    modify_scripts(soup,s)
                     html=change_offer(soup,s)
 
 
