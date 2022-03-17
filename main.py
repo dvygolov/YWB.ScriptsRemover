@@ -30,11 +30,21 @@ def php_load(html:str)->str:
     html = re.sub(php_sig, php_add, html)
     return html
 
-def remove_comments(soup:BeautifulSoup)->None:
+def remove_junk(soup:BeautifulSoup)->None:
     print('Removing all HTML comments...')
     comments = soup.findAll(text=lambda text:isinstance(text, Comment))
     for comment in comments:
         comment.extract()
+    print('Removing all meta tags...')
+    metatags = soup.select('meta')
+    for meta in metatags:
+        if 'name' in meta.attrs and meta['name']=='viewport':
+            continue
+        if 'http-equiv' in meta.attrs:
+            continue
+        meta.extract()
+    base = soup.find('base')
+    base.extract()
 
 def remove_all_scripts(soup):
     for s in soup.select('script'):
@@ -130,6 +140,8 @@ def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
                         continue
                     inpt.extract()
                     continue
+                elif inpt['name'] in ['phone','tel'] and 'placeholder' in inpt.attrs:
+                    del inpt['placeholder']
                 else:
                     continue
             if 'type' in inpt.attrs and inpt['type'] not in ['button','submit']:
@@ -210,7 +222,7 @@ def main():
                 html = f.read()
             html=php_save(html)
             soup = BeautifulSoup(html, 'html.parser')
-            remove_comments(soup)
+            remove_junk(soup)
 
 
             match menu:
