@@ -1,9 +1,10 @@
 import re, chardet, json
 from copyright import show
-from files import get_files
+from files import get_files, zip_file
 from bs4 import BeautifulSoup, BeautifulStoneSoup, Comment
 from urllib.parse import urlparse
 from settings import SoftSettings, load_settings
+from collections import Counter
 
 
 php_sig = '!!!PHP!!!'
@@ -101,7 +102,8 @@ def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
         defaultCountry=htm['lang'].upper()
 
 
-    currentOffer=input('Current offer name:')
+    defaultOffer=find_probable_offer(soup)
+    currentOffer=input(f'Current offer name (or {defaultOffer} if Enter):')
     newOffer=input('New offer name (Enter if the same):') or currentOffer
     
     country=input(f'Enter country code (or {defaultCountry} if Enter):') or defaultCountry
@@ -113,8 +115,23 @@ def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
             formId=f"#{form['id']}"
         print('Removing unnecessary inputs...')
         for inpt in form.select('input'):
-            if not inpt.has_attr('name') or inpt['name'] not in ['name','phone','tel']:
+            if 'name'in inpt.attrs:
+                if inpt['name'] not in ['name','phone','tel']:
+                    if 'type' in inpt.attrs and inpt['type'] not in ['button','submit']:
+                        inpt.extract()
+                        continue
+                    inpt.extract()
+                    continue
+                else:
+                    continue
+            if 'type' in inpt.attrs and inpt['type'] not in ['button','submit']:
                 inpt.extract()
+                continue
+            else:
+                continue
+            inpt.extract()
+
+                
         print('Adding necessary inputs...')
         for inpt in settings.inputs:
             newInput=soup.new_tag('input',attrs=inpt)
@@ -142,6 +159,14 @@ def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
             spl=currentOffer.split()
             html=html.replace('&nbsp;'.join(spl),newOffer)
         return html
+
+def find_probable_offer(soup:BeautifulSoup)->str:
+    texts=soup.findAll(text=True)
+    txt=' '.join(t.strip() for t in texts)
+    txt= ' '.join(t.strip(',.:?!;') for t in txt.split() if len(t)>4)
+    c=Counter(txt.split())
+    probable,_= c.most_common(1)[0] 
+    return probable
 
 def main():
     show()
@@ -188,6 +213,9 @@ def main():
         with open(fname,'w',encoding="utf-8") as f:
             f.write(html)
 
+    zipAnswer=input("Do you want to zip all the folder's content?(Y/N)")
+    if zipAnswer in ['Y','y'] or not zipAnswer:
+        zip_file()
     print('All Done! Press any key to exit and... thank you for your support!')
 
 
