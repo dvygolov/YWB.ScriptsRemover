@@ -44,7 +44,8 @@ def remove_junk(soup:BeautifulSoup)->None:
             continue
         meta.extract()
     base = soup.find('base')
-    base.extract()
+    if base!=None:
+        base.extract()
 
 def remove_all_scripts(soup):
     for s in soup.select('script'):
@@ -116,6 +117,7 @@ def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
         del htm.attrs['data-scrapbook-create']
     if 'data-scrapbook-source' in htm.attrs:
         del htm.attrs['data-scrapbook-source']
+    defaultCountry='ES'
     if 'lang' in htm.attrs:
         defaultCountry=htm['lang'].upper()
 
@@ -181,7 +183,7 @@ def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
         for link in soup.findAll('a'):
             if 'onclick' in link.attrs:
                 del link['onclick']
-            if 'http' in link['href']:
+            if 'href' in link.attrs and 'http' in link['href']:
                 print('Found link with absolute url, changing...')
                 link['href']=formId
 
@@ -191,6 +193,9 @@ def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
         if ' ' in currentOffer:
             spl=currentOffer.split()
             html=html.replace('&nbsp;'.join(spl),newOffer)
+        if '&' in currentOffer:
+            spl=currentOffer.split('&')
+            html=html.replace('&amp;'.join(spl),newOffer)
         return html
 
 def find_probable_offer(soup:BeautifulSoup)->str:
