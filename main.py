@@ -1,18 +1,36 @@
-import re, chardet
+import re, chardet, json
 from copyright import show
 from files import get_files
 from bs4 import BeautifulSoup, BeautifulStoneSoup, Comment
 from urllib.parse import urlparse
+from settings import SoftSettings, load_settings
 
 
 php_sig = '!!!PHP!!!'
 php_elements = []
+
 def php_remove(m):
     php_elements.append(m.group())
     return php_sig
 
 def php_add(m):
     return php_elements.pop(0)
+
+# Pre-parse HTML to remove all PHP elements
+def php_save(html:str)->str:
+    html = re.sub(r'<\?.*?\?>', php_remove, html, flags=re.S + re.M)
+    return html
+
+#return all PHP elements to their places
+def php_load(html:str)->str:
+    html = re.sub(php_sig, php_add, html)
+    return html
+
+def remove_comments(soup:BeautifulSoup)->None:
+    print('Removing all HTML comments...')
+    comments = soup.findAll(text=lambda text:isinstance(text, Comment))
+    for comment in comments:
+        comment.extract()
 
 def remove_all_scripts(soup):
     for s in soup.select('script'):
@@ -62,74 +80,101 @@ def modify_scripts(soup:BeautifulSoup):
             case is_facebook_tag(s):
                 print('Found FB pixel\'s tag, removing...')
                 s.extract()
-                break
             case is_yandex_tag(s):
                 print('Found Yandex Metrika\'s tag, removing...')
                 s.extract()
-                break
             case is_google_tag(s):
                 print('Found Google tag, removing...')
                 s.extract()
-                break
             case is_local_jquery(s.get('src')):
                 print(f'Found local JQuery {s.get("src")}, modifying...')
                 s['src'] = jquery
-                break
 
 
-def change_offer(soup:BeautifulSoup,s:json):
+def change_offer(soup:BeautifulSoup,s:SoftSettings)->str:
     currentOffer=input('Current offer name:')
     newOffer=input('New offer name:')
+    country=input('Enter country code:')
 
+    formId='#form'
     for form in soup.select('form'):
+        if 'id' in form.attrs:
+            formId=f"#{form['id']}"
+        print('Removing unnecessary inputs...')
         for inpt in form.select('input'):
             if not inpt.has_attr('name') or inpt['name'] not in ['name','phone','tel']:
                 inpt.extract()
-        for inpt in s['inputs']:
+        print('Adding necessary inputs...')
+        for inpt in s.inputs:
             newInput=soup.new_tag('input',attrs=inpt)
             form.insert(0,newInput)
+        print('Changing form action...')
+        form['action']=f'../common/order/{country.lower()}/{newOffer.lower()}.php'
+        print('Changing product images...')
+        for img in soup.findAll('img'):
+            if 'product.png' in img['src']:
+                print('Found product image!')
+                img['src']=f'../common/products/{newOffer.lower()}.png'
+        for link in soup.findAll('a'):
+            if 'http' in link['href']:
+                print('Found link with absolute url, changing...')
+                link['href']=formId
+
+        html=soup.prettify(formatter="html")
+        print('Replacing offer...')
+        html=html.replace(currentOffer, newOffer)
+        if ' ' in currentOffer:
+            spl=currentOffer.split()
+            html=html.replace('&nbsp;'.join(spl),newOffer)
+        return html
+
+def main():
+    show()
+    s = load_settings()
+    files = get_files()
+
+    print('What do you want to do?')
+    print('1.Remove ALL scripts')
+    print('2.Remove Facebook and Google scripts and change JQuery to CDN')
+    print('3.Add form inputs and change offer')
+    menu = input('Enter your choice(s):')
+
+    for fname in files:
+        print(f'Processing {fname}...')
+        try:
+            with open(fname, 'rb') as detect_file_encoding:
+                detection = chardet.detect(detect_file_encoding.read())
+            print('Detected encoding:', detection)
+            with open(fname, encoding=detection['encoding'],errors='ignore') as f:
+                html = f.read()
+            html=php_save(html)
+            soup = BeautifulSoup(html, 'html.parser')
+            remove_comments(soup)
+
+
+            match menu:
+                case '1':
+                    remove_all_scripts(soup)
+                    html=soup.prettify(formatter="html")
+                case '2':
+                    modify_scripts(soup)
+                    html=soup.prettify(formatter="html")
+                case '3':
+                    html=change_offer(soup,s)
+
+
+            html=php_load(html)
+
+        except Exception as e:
+            print(f"Error processing file {fname}! Skipping... Error: {e}")
+        finally:
+            f.close()
+        with open(fname,'w',encoding="utf-8") as f:
+            f.write(html)
+
+    print('All Done! Press any key to exit and... thank you for your support!')
 
 
 
-show()
-files = get_files()
-
-print('What do you want to do?')
-print('1.Remove ALL scripts')
-print('2.Remove Facebook and Google scripts and change JQuery to CDN')
-print('3.Add form inputs and change offer')
-menu = input('Enter your choice(s):')
-
-for fname in files:
-    print(f'Processing {fname}...')
-    try:
-        with open(fname, 'rb') as detect_file_encoding:
-            detection = chardet.detect(detect_file_encoding.read())
-        print('Detected encoding:', detection)
-        with open(fname, encoding=detection['encoding'],errors='ignore') as f:
-            html = f.read()
-        # Pre-parse HTML to remove all PHP elements
-        html = re.sub(r'<\?.*?\?>', php_remove, html, flags=re.S + re.M)
-        soup = BeautifulSoup(html, 'html.parser')
-        match menu:
-            case '1':
-                remove_all_scripts(soup)
-            case '2':
-                modify_scripts(soup)
-            case '3':
-                change_offer(soup)
-
-        print('Removing all HTML comments...')
-        comments = soup.findAll(text=lambda text:isinstance(text, Comment))
-        for comment in comments:
-            comment.extract()
-        #return all PHP elements to their places
-        html = re.sub(php_sig, php_add, soup.prettify(formatter="html"))
-    except Exception as e:
-        print(f"Error processing file {fname}! Skipping... Error: {e}")
-    finally:
-        f.close()
-    with open(fname,'w',encoding="utf-8") as f:
-        f.write(html)
-
-print('All Done! Press any key to exit and... thank you for your support!')
+if __name__ == "__main__":
+    main()

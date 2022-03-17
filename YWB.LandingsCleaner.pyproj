@@ -30,6 +30,7 @@
     <Compile Include="copyright.py" />
     <Compile Include="files.py" />
     <Compile Include="main.py" />
+    <Compile Include="settings.py" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.10" />
