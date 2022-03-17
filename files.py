@@ -2,11 +2,15 @@ import os,sys
 from zipfile import ZipFile
 from os.path import basename
 
-def get_files():
+def get_working_path()->str:
     if len(sys.argv)>1:
         dirPath=sys.argv[1]
     else:
         dirPath = os.path.dirname(os.path.realpath(__file__))
+    return dirPath
+
+def get_files():
+    dirPath=get_working_path()
     print(f"Working directory: {dirPath}")
     files = []
     for root, dirnames, filenames in os.walk(dirPath):
@@ -23,10 +27,7 @@ def get_files():
         return files
 
 def zip_file():
-    if len(sys.argv)>1:
-        dirPath=sys.argv[1]
-    else:
-        dirPath = os.path.dirname(os.path.realpath(__file__))
+    dirPath=get_working_path()
     archivePath=os.path.join(dirPath,'prelanding.zip')
     with ZipFile(archivePath, 'w') as zipObj:
        for folderName, subfolders, filenames in os.walk(dirPath):

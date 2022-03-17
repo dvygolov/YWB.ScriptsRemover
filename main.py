@@ -1,12 +1,15 @@
 import re, chardet, json
 from copyright import show
-from files import get_files, zip_file
+from files import get_files, get_working_path, zip_file
 from bs4 import BeautifulSoup, BeautifulStoneSoup, Comment
 from urllib.parse import urlparse
 from settings import SoftSettings, load_settings
 from collections import Counter
+from PIL import Image
+from pytesseract import pytesseract
+from os.path import join
 
-
+path_to_tesseract = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 php_sig = '!!!PHP!!!'
 php_elements = []
 
@@ -76,6 +79,7 @@ def modify_scripts(soup:BeautifulSoup,settings:SoftSettings):
     for s in soup.select('noscript'):
         print('Found noscript tag, removing...')
         s.extract()
+    jqueryFound=False
     for s in soup.select('script'):
         if is_facebook_tag(s):
             print('Found FB pixel\'s tag, removing...')
@@ -87,12 +91,16 @@ def modify_scripts(soup:BeautifulSoup,settings:SoftSettings):
             print('Found Google tag, removing...')
             s.extract()
         elif is_local_jquery(s.get('src')):
-            print(f'Found local JQuery {s.get("src")}, modifying...')
-            s['src'] = settings.jquery
+            if not jqueryFound:
+                print(f'Found local JQuery {s.get("src")}, modifying...')
+                s['src'] = settings.jquery
+                jqueryFound=True
+            else:
+                print('Removing duplicate JQuery...')
+                s.extract()
 
 
 def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
-
     htm=soup.find('html')
     if 'data-scrapbook-create' in htm.attrs:
         del htm.attrs['data-scrapbook-create']
@@ -138,13 +146,26 @@ def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
             form.insert(0,newInput)
         print('Changing form action...')
         form['action']=f'../common/order/{country.lower()}/{newOffer.lower()}.php'
+
         print('Changing product images...')
         for img in soup.findAll('img'):
-            m=re.match('product.*\.png', img['src'])
+            if 'scrapbook' in img['src']:
+                continue
+            m=re.match('product.*(\.png|\.jpg|\.jpeg)', img['src'])
             if m!=None:
                 imgName=m.group()
-                print(f'Found product image:{imgName}')
+                print(f'Found product image: {imgName}')
                 img['src']=f'../common/products/{newOffer.lower()}.png'
+            else:
+                bImage=Image.open(join(get_working_path(),img['src']))
+                pytesseract.tesseract_cmd=path_to_tesseract
+                imgText = pytesseract.image_to_string(bImage)
+                if currentOffer.lower() in imgText.lower():
+                    print(f'Found product image using OCR: {imgName}')
+                    img['src']=f'../common/products/{newOffer.lower()}.png'
+
+
+
         for link in soup.findAll('a'):
             if 'onclick' in link.attrs:
                 del link['onclick']
