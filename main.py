@@ -103,7 +103,7 @@ def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
 
 
     defaultOffer=find_probable_offer(soup)
-    currentOffer=input(f'Current offer name (or {defaultOffer} if Enter):')
+    currentOffer=input(f'Current offer name (or {defaultOffer} if Enter):') or defaultOffer
     newOffer=input('New offer name (Enter if the same):') or currentOffer
     
     country=input(f'Enter country code (or {defaultCountry} if Enter):') or defaultCountry
