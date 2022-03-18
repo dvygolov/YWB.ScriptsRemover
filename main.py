@@ -162,7 +162,10 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
                         continue
                     inpt.extract()
                     continue
-                elif inpt['name'] in ['phone','tel'] and 'placeholder' in inpt.attrs:
+                elif( inpt['name'] in ['phone','tel'] and 
+                     'placeholder' in inpt.attrs and 
+                     re.match('^[\s\d\+]+$',inpt['placeholder'])
+                     ):
                     del inpt['placeholder']
                     continue
                 else:
