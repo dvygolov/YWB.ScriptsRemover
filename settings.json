@@ -1,5 +1,5 @@
 {
-  "jquery": "//ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js",
+  "jquery": "https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js",
   "inputs": [
     {
       "type": "hidden",
@@ -16,5 +16,7 @@
       "name": "country",
       "value": "{country_code}"
     }
-  ]
+  ],
+  "remove_webp": true,
+  "fix_image_path": true
 }

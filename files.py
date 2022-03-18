@@ -1,42 +1,50 @@
-import os,sys
+import os, sys
 from zipfile import ZipFile
 from os.path import basename
 
-def get_working_path()->str:
-    if len(sys.argv)>1:
-        dirPath=sys.argv[1]
+
+def get_working_path() -> str:
+    if len(sys.argv) > 1:
+        dirPath = sys.argv[1]
     else:
         dirPath = os.path.dirname(os.path.realpath(__file__))
     return dirPath
 
+
 def get_files():
-    dirPath=get_working_path()
+    dirPath = get_working_path()
     print(f"Working directory: {dirPath}")
     files = []
     for root, dirnames, filenames in os.walk(dirPath):
         for filename in filenames:
-            if filename.endswith('.html') or filename.endswith('.htm') or filename.endswith('.php'):
+            if (
+                filename.endswith(".html")
+                or filename.endswith(".htm")
+                or filename.endswith(".php")
+            ):
                 fname = os.path.join(root, filename)
-                print('Found file: {}'.format(fname))
+                print("Found file: {}".format(fname))
                 files.append(fname)
-    if len(files)== 0:
-        print('No HTML/PHP files found! Start script in a directory WITH HTML/PHP files!')
+    if len(files) == 0:
+        print(
+            "No HTML/PHP files found! Start script in a directory WITH HTML/PHP files!"
+        )
         sys.exit()
     else:
         print(f"Found {len(files)} HTML/PHP files!")
         return files
 
+
 def zip_file():
-    dirPath=get_working_path()
-    archivePath=os.path.join(dirPath,'prelanding.zip')
-    with ZipFile(archivePath, 'w') as zipObj:
-       for folderName, subfolders, filenames in os.walk(dirPath):
-           for filename in filenames:
-               if filename=='prelanding.zip':
-                   continue
-               filePath = os.path.join(folderName, filename)
-               zipObj.write(filePath, basename(filePath))
-               os.remove(filePath)
+    dirPath = get_working_path()
+    archivePath = os.path.join(dirPath, "prelanding.zip")
+    with ZipFile(archivePath, "w") as zipObj:
+        for folderName, subfolders, filenames in os.walk(dirPath):
+            for filename in filenames:
+                if filename == "prelanding.zip":
+                    continue
+                filePath = os.path.join(folderName, filename)
+                zipObj.write(filePath, basename(filePath))
+                os.remove(filePath)
 
-    print('Zip file prelanding.zip created!')
-
+    print("Zip file prelanding.zip created!")

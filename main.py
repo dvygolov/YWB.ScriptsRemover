@@ -1,4 +1,4 @@
-import re, chardet, json
+import re, chardet, json, os
 from copyright import show
 from files import get_files, get_working_path, zip_file
 from bs4 import BeautifulSoup, BeautifulStoneSoup, Comment
@@ -111,7 +111,9 @@ def modify_scripts(soup:BeautifulSoup,settings:SoftSettings):
                 s.extract()
 
 
-def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
+def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
+    dirPath=get_working_path()
+
     htm=soup.find('html')
     if 'data-scrapbook-create' in htm.attrs:
         del htm.attrs['data-scrapbook-create']
@@ -165,18 +167,31 @@ def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
         for img in soup.findAll('img'):
             if 'scrapbook' in img['src']:
                 continue
+            if settings.fix_image_path:
+                img['src']=img['src'].split('/')[-1]
+                if 'onerror' in img.attrs:
+                    del img['onerror']
+
             m=re.match('product.*(\.png|\.jpg|\.jpeg)', img['src'])
             if m!=None:
                 imgName=m.group()
                 print(f'Found product image: {imgName}')
                 img['src']=f'../common/products/{newOffer.lower()}.png'
             else:
-                bImage=Image.open(join(get_working_path(),img['src']))
+                bImage=Image.open(join(dirPath,img['src']))
                 pytesseract.tesseract_cmd=path_to_tesseract
                 imgText = pytesseract.image_to_string(bImage)
                 if currentOffer.lower() in imgText.lower():
                     print(f'Found product image using OCR: {imgName}')
                     img['src']=f'../common/products/{newOffer.lower()}.png'
+        if settings.remove_webp:
+            print('Removind all webp images...')
+            for src in soup.select('source', type='image/webp'):
+                src.extract()
+                if src['srcset'].endswith('.webp'):
+                    fullSrcPath=join(dirPath,src['srcset'])
+                    if os.path.isfile(fullSrcPath):
+                        os.remove(fullSrcPath)
 
 
 
@@ -187,7 +202,7 @@ def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
                 print('Found link with absolute url, changing...')
                 link['href']=formId
 
-        html=soup.prettify(formatter="html")
+        html=soup.prettify()
         print('Replacing offer...')
         html=html.replace(currentOffer, newOffer)
         if ' ' in currentOffer:
@@ -201,7 +216,7 @@ def change_offer(soup:BeautifulSoup,settings:SoftSettings)->str:
 def find_probable_offer(soup:BeautifulSoup)->str:
     texts=soup.findAll(text=True)
     txt=' '.join(t.strip() for t in texts)
-    txt= ' '.join(t.strip(',.:?!;') for t in txt.split() if len(t)>4)
+    txt= ' '.join(t.strip(',.:?!;') for t in txt.split() if len(t)>4 and re.match('^[A-Za-z&]+$',t))
     c=Counter(txt.split())
     probable,_= c.most_common(1)[0] 
     return probable
@@ -233,13 +248,13 @@ def main():
             match menu:
                 case '1':
                     remove_all_scripts(soup)
-                    html=soup.prettify(formatter="html")
+                    html=soup.prettify()
                 case '2':
                     modify_scripts(soup,s)
-                    html=soup.prettify(formatter="html")
+                    html=soup.prettify()
                 case '3':
                     modify_scripts(soup,s)
-                    html=change_offer(soup,s)
+                    html=change_offer(soup,s,detection['encoding'])
 
 
             html=php_load(html)
@@ -248,7 +263,7 @@ def main():
             print(f"Error processing file {fname}! Skipping... Error: {e}")
         finally:
             f.close()
-        with open(fname,'w',encoding="utf-8") as f:
+        with open(fname,'w',encoding=detection['encoding']) as f:
             f.write(html)
 
     zipAnswer=input("Do you want to zip all the folder's content?(Y/N)")
