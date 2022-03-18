@@ -183,7 +183,7 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
             newInput=soup.new_tag('input',attrs=inpt)
             form.insert(0,newInput)
         print('Changing form action...')
-        fAction=f'../common/order/{country.lower()}/{newOffer.lower().replace(" ","")}'
+        fAction=f'../common/order/{country.lower()}/{newOffer.lower().replace(" ","").replace("-","")}.php'
         if vertical!=None:
             fAction+=f'_{vertical}'
         if pp!=None:
@@ -200,18 +200,23 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
             if 'onerror' in img.attrs:
                 del img['onerror']
 
+        if newOffer==currentOffer:
+            continue
         m=re.match('product.*(\.png|\.jpg|\.jpeg)', img['src'])
         if m!=None:
             imgName=m.group()
             print(f'Found product image: {imgName}')
-            img['src']=f'../common/products/{newOffer.lower().replace(" ","")}.png'
+            img['src']=f'../common/products/{newOffer.lower().replace(" ","").replace("-","")}.png'
         else:
-            bImage=Image.open(join(dirPath,img['src']))
+            imgFullPath=join(dirPath,img['src'])
+            if not os.path.isfile(imgFullPath) or img['src'].split('.')[-1] not in ['png','jpg','jpeg']:
+                continue
+            bImage=Image.open(imgFullPath)
             pytesseract.tesseract_cmd=path_to_tesseract
             imgText = pytesseract.image_to_string(bImage)
             if currentOffer.lower() in imgText.lower():
-                print(f'Found product image using OCR: {imgName}')
-                img['src']=f'../common/products/{newOffer.lower()}.png'
+                print(f'Found product image using OCR: {img["src"]}')
+                img['src']=f'../common/products/{newOffer.lower().replace(" ","").replace("-","")}.png'
     if settings.remove_webp:
         print('Removind all webp images...')
         for src in soup.select('source', type='image/webp'):
