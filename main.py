@@ -86,7 +86,7 @@ def is_yandex_tag(tag):
     if "mc.yandex.ru" in tag.string:
         return True
 
-def modify_scripts(soup:BeautifulSoup,settings:SoftSettings):
+def modify_scripts(soup:BeautifulSoup, settings:SoftSettings)->None:
     for s in soup.select('noscript'):
         print('Found noscript tag, removing...')
         s.extract()
@@ -104,6 +104,9 @@ def modify_scripts(soup:BeautifulSoup,settings:SoftSettings):
         elif is_local_jquery(s.get('src')):
             if not jqueryFound:
                 print(f'Found local JQuery {s.get("src")}, modifying...')
+                fullJqueryPath=join(get_working_path(),s['src'])
+                if os.path.isfile(fullJqueryPath):
+                    os.remove(fullJqueryPath)
                 s['src'] = settings.jquery
                 jqueryFound=True
             else:
@@ -265,6 +268,9 @@ def main():
             f.close()
         with open(fname,'w',encoding=detection['encoding']) as f:
             f.write(html)
+
+    openAnswer=input("Do you want to open index.htm file in your browser?(Y/N)")
+    if openAnswer in ['Y','y'] or not openAnswer:
 
     zipAnswer=input("Do you want to zip all the folder's content?(Y/N)")
     if zipAnswer in ['Y','y'] or not zipAnswer:
