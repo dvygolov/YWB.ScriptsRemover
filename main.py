@@ -113,6 +113,19 @@ def modify_scripts(soup:BeautifulSoup, settings:SoftSettings)->None:
                 print('Removing duplicate JQuery...')
                 s.extract()
 
+def choose_vertical()->str:
+    verticals=["diet","joints","potency","prostatitis"]
+    for i,v in enumerate(verticals):
+        print(f'{i+1}. {v}')
+    chosen=input('Choose your vertical (Enter if none):')
+    return None if not chosen else verticals[int(chosen)-1]
+
+def choose_pp()->str:
+    pps=["m1","lucky","leadbit","shakes","kma","lemonad"]
+    for i,pp in enumerate(pps):
+        print(f'{i+1}. {pp}')
+    chosen=input('Choose your program (Enter if none):')
+    return None if not chosen else pps[int(chosen)-1]
 
 def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
     dirPath=get_working_path()
@@ -125,6 +138,8 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
     defaultCountry='ES'
     if 'lang' in htm.attrs:
         defaultCountry=htm['lang'].upper()
+    vertical = choose_vertical()
+    pp = choose_pp()
 
 
     defaultOffer=find_probable_offer(soup)
@@ -149,6 +164,7 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
                     continue
                 elif inpt['name'] in ['phone','tel'] and 'placeholder' in inpt.attrs:
                     del inpt['placeholder']
+                    continue
                 else:
                     continue
             if 'type' in inpt.attrs and inpt['type'] not in ['button','submit']:
@@ -164,57 +180,63 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
             newInput=soup.new_tag('input',attrs=inpt)
             form.insert(0,newInput)
         print('Changing form action...')
-        form['action']=f'../common/order/{country.lower()}/{newOffer.lower()}.php'
+        fAction=f'../common/order/{country.lower()}/{newOffer.lower().replace(" ","")}'
+        if vertical!=None:
+            fAction+=f'_{vertical}'
+        if pp!=None:
+            fAction+=f'_{pp}'
+        fAction+='.php'
+        form['action']=fAction
 
-        print('Changing product images...')
-        for img in soup.findAll('img'):
-            if 'scrapbook' in img['src']:
-                continue
-            if settings.fix_image_path:
-                img['src']=img['src'].split('/')[-1]
-                if 'onerror' in img.attrs:
-                    del img['onerror']
+    print('Changing product images...')
+    for img in soup.findAll('img'):
+        if 'scrapbook' in img['src']:
+            continue
+        if settings.fix_image_path:
+            img['src']=img['src'].split('/')[-1]
+            if 'onerror' in img.attrs:
+                del img['onerror']
 
-            m=re.match('product.*(\.png|\.jpg|\.jpeg)', img['src'])
-            if m!=None:
-                imgName=m.group()
-                print(f'Found product image: {imgName}')
+        m=re.match('product.*(\.png|\.jpg|\.jpeg)', img['src'])
+        if m!=None:
+            imgName=m.group()
+            print(f'Found product image: {imgName}')
+            img['src']=f'../common/products/{newOffer.lower().replace(" ","")}.png'
+        else:
+            bImage=Image.open(join(dirPath,img['src']))
+            pytesseract.tesseract_cmd=path_to_tesseract
+            imgText = pytesseract.image_to_string(bImage)
+            if currentOffer.lower() in imgText.lower():
+                print(f'Found product image using OCR: {imgName}')
                 img['src']=f'../common/products/{newOffer.lower()}.png'
-            else:
-                bImage=Image.open(join(dirPath,img['src']))
-                pytesseract.tesseract_cmd=path_to_tesseract
-                imgText = pytesseract.image_to_string(bImage)
-                if currentOffer.lower() in imgText.lower():
-                    print(f'Found product image using OCR: {imgName}')
-                    img['src']=f'../common/products/{newOffer.lower()}.png'
-        if settings.remove_webp:
-            print('Removind all webp images...')
-            for src in soup.select('source', type='image/webp'):
-                src.extract()
-                if src['srcset'].endswith('.webp'):
-                    fullSrcPath=join(dirPath,src['srcset'])
-                    if os.path.isfile(fullSrcPath):
-                        os.remove(fullSrcPath)
+    if settings.remove_webp:
+        print('Removind all webp images...')
+        for src in soup.select('source', type='image/webp'):
+            src.extract()
+            if src['srcset'].endswith('.webp'):
+                fullSrcPath=join(dirPath,src['srcset'])
+                if os.path.isfile(fullSrcPath):
+                    os.remove(fullSrcPath)
 
 
 
-        for link in soup.findAll('a'):
-            if 'onclick' in link.attrs:
-                del link['onclick']
-            if 'href' in link.attrs and 'http' in link['href']:
-                print('Found link with absolute url, changing...')
-                link['href']=formId
+    for link in soup.findAll('a'):
+        if 'onclick' in link.attrs:
+            del link['onclick']
+        if 'href' in link.attrs and 'http' in link['href']:
+            print('Found link with absolute url, changing...')
+            link['href']=formId
 
-        html=soup.prettify()
-        print('Replacing offer...')
-        html=html.replace(currentOffer, newOffer)
-        if ' ' in currentOffer:
-            spl=currentOffer.split()
-            html=html.replace('&nbsp;'.join(spl),newOffer)
-        if '&' in currentOffer:
-            spl=currentOffer.split('&')
-            html=html.replace('&amp;'.join(spl),newOffer)
-        return html
+    html=soup.prettify()
+    print('Replacing offer...')
+    html=html.replace(currentOffer, newOffer)
+    if ' ' in currentOffer:
+        spl=currentOffer.split()
+        html=html.replace('&nbsp;'.join(spl),newOffer)
+    if '&' in currentOffer:
+        spl=currentOffer.split('&')
+        html=html.replace('&amp;'.join(spl),newOffer)
+    return html
 
 def find_probable_offer(soup:BeautifulSoup)->str:
     texts=soup.findAll(text=True)
@@ -222,6 +244,8 @@ def find_probable_offer(soup:BeautifulSoup)->str:
     txt= ' '.join(t.strip(',.:?!;') for t in txt.split() if len(t)>4 and re.match('^[A-Za-z&]+$',t))
     c=Counter(txt.split())
     probable,_= c.most_common(1)[0] 
+    if probable=='Cannabis':
+        probable+=' Oil'
     return probable
 
 def main():
@@ -271,6 +295,8 @@ def main():
 
     openAnswer=input("Do you want to open index.htm file in your browser?(Y/N)")
     if openAnswer in ['Y','y'] or not openAnswer:
+        import webbrowser
+        webbrowser.open('file://'+os.path.realpath(files[0]))
 
     zipAnswer=input("Do you want to zip all the folder's content?(Y/N)")
     if zipAnswer in ['Y','y'] or not zipAnswer:
