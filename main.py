@@ -224,7 +224,7 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
 
         if newOffer==currentOffer:
             continue
-        m=re.match('product.*(\.png|\.jpg|\.jpeg)', img['src'])
+        m=re.match('product.*(\.png|\.jpg|\.jpeg)|prod\.png', img['src'])
         if m!=None:
             imgName=m.group()
             print(f'Found product image: {imgName}')
