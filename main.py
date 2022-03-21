@@ -183,7 +183,7 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
             newInput=soup.new_tag('input',attrs=inpt)
             form.insert(0,newInput)
         print('Changing form action...')
-        fAction=f'../common/order/{country.lower()}/{newOffer.lower().replace(" ","").replace("-","")}.php'
+        fAction=f'../common/order/{country.lower()}/{newOffer.lower().replace(" ","").replace("-","")}'
         if vertical!=None:
             fAction+=f'_{vertical}'
         if pp!=None:

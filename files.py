@@ -1,19 +1,25 @@
+from ntpath import join
 import os, sys
 from zipfile import ZipFile
-from os.path import basename
+from os.path import dirname,realpath,basename, join
 
 
 def get_working_path() -> str:
     if len(sys.argv) > 1:
         dirPath = sys.argv[1]
     else:
-        dirPath = os.path.dirname(os.path.realpath(__file__))
+        dirPath = dirname(realpath(__file__))
     return dirPath
 
 
 def get_files():
     dirPath = get_working_path()
     print(f"Working directory: {dirPath}")
+
+    if os.path.isdir(join(dirPath,'__macosx')):
+        import shutil
+        shutil.rmtree(join(dirPath,'__macosx'))
+
     files = []
     for root, dirnames, filenames in os.walk(dirPath):
         for filename in filenames:
@@ -37,13 +43,15 @@ def get_files():
 
 def zip_file():
     dirPath = get_working_path()
-    archivePath = os.path.join(dirPath, "prelanding.zip")
+    archivePath = join(dirPath, "prelanding.zip")
+    if os.path.isfile(archivePath):
+        os.remove(archivePath)
     with ZipFile(archivePath, "w") as zipObj:
         for folderName, subfolders, filenames in os.walk(dirPath):
             for filename in filenames:
                 if filename == "prelanding.zip":
                     continue
-                filePath = os.path.join(folderName, filename)
+                filePath = join(folderName, filename)
                 zipObj.write(filePath, basename(filePath))
                 os.remove(filePath)
 
