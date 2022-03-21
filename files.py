@@ -1,5 +1,5 @@
 from ntpath import join
-import os, sys
+import os, sys, shutil
 from zipfile import ZipFile
 from os.path import dirname,realpath,basename, join
 
@@ -8,20 +8,24 @@ def get_working_path() -> str:
     if len(sys.argv) > 1:
         dirPath = sys.argv[1]
     else:
-        dirPath = dirname(realpath(__file__))
+        dirPath = get_currentscript_path() 
     return dirPath
 
+def get_currentscript_path()->str:
+    return dirname(realpath(__file__))
+
+def copy_file(src:str,dst:str)->None:
+    shutil.copy(src,dst)
 
 def get_files():
     dirPath = get_working_path()
     print(f"Working directory: {dirPath}")
 
     if os.path.isdir(join(dirPath,'__macosx')):
-        import shutil
         shutil.rmtree(join(dirPath,'__macosx'))
 
     files = []
-    for root, dirnames, filenames in os.walk(dirPath):
+    for root, _, filenames in os.walk(dirPath):
         for filename in filenames:
             if (
                 filename.endswith(".html")

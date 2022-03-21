@@ -1,6 +1,6 @@
 import re, chardet, json, os
 from copyright import show
-from files import get_files, get_working_path, zip_file
+from files import copy_file, get_currentscript_path, get_files, get_working_path, zip_file
 from bs4 import BeautifulSoup, BeautifulStoneSoup, Comment
 from urllib.parse import urlparse
 from settings import SoftSettings, load_settings
@@ -8,6 +8,7 @@ from collections import Counter
 from PIL import Image
 from pytesseract import pytesseract
 from os.path import join
+from copy import copy
 
 path_to_tesseract = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 php_sig = '!!!PHP!!!'
@@ -148,11 +149,30 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
     
     country=input(f'Enter country code (or {defaultCountry} if Enter):') or defaultCountry
 
-    formId='#form'
-    for form in soup.select('form'):
+    formId='form'
+    isModalForm=False
+    allForms=soup.select('form')
+
+    if len(allForms)==0:
+        isModalForm=True
+        print('No forms found! Inserting modal form...')
+        head=soup.select_one('head')
+        curPath=get_currentscript_path()
+        fCssPath=join(curPath,'form','form.css')
+        copy_file(fCssPath,dirPath)
+        linkTag=soup.new_tag('link',rel='stylesheet',href='form.css')
+        head.append(linkTag)
+        body = soup.select_one('body')
+        with open(join(curPath,'form','form.html'), errors='ignore') as f:
+            formHtml = f.read()
+        fSoup=BeautifulSoup(formHtml, 'html.parser')
+        soup.body.append(copy(fSoup.select_one('body :first-child')))
+        allForms=soup.select('form')
+
+    for form in allForms:
         if 'id' in form.attrs:
             print('Found form ID!')
-            formId=f"#{form['id']}"
+            formId=form['id']
         print('Removing unnecessary inputs...')
         for inpt in form.select('input'):
             if 'name'in inpt.attrs:
@@ -190,6 +210,8 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
             fAction+=f'_{pp}'
         fAction+='.php'
         form['action']=fAction
+
+        
 
     print('Changing product images...')
     for img in soup.findAll('img'):
@@ -231,9 +253,13 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
     for link in soup.findAll('a'):
         if 'onclick' in link.attrs:
             del link['onclick']
-        if 'href' in link.attrs and 'http' in link['href']:
+        if isModalForm:
+            link['onclick']=f'document.getElementById("{formId}").style.display="block";'
+        elif 'href' in link.attrs and 'http' in link['href']:
             print('Found link with absolute url, changing...')
-            link['href']=formId
+            link['href']=f'#{formId}'
+
+
 
     html=soup.prettify()
     print('Replacing offer...')

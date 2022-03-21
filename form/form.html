@@ -1,0 +1,43 @@
+<html>
+<body>
+    <div class="iframe" id="orderform">
+        <font class="form-font" color="black">
+            {PRODUCTDESCRIPTION}<br>
+            <span style="color:red; white-space: nowrap;">
+                <span class="new_price_val">{PRODUCTPRICE}</span>
+                <span class="new_price_cur">{PRODUCTCURRENCY}</span>
+            </span>
+            <span style="color:red; white-space: nowrap;">
+                <del>
+                    <span class="old_price_val">{PRODUCTOLDPRICE}</span>
+                    <span class="old_price_cur">{PRODUCTCURRENCY}</span>
+                </del>
+            </span>
+        </font>
+        <img src="{PRODUCTIMAGE}" style="width: 80% !important;" />
+        <form action="{ACTION}" method="post" class="orderForm x_order_form order_all" id="forma">
+            <div class="order_form">
+                <div class="block_form">
+                    <label class="block_form_label">{NAME}</label>
+                    <div>
+                        <input class="form_input" name="name" required placeholder="{NAME}"/>
+                    </div>
+                </div>
+                <div class="block_form">
+                    <label class="block_form_label">{PHONE}</label>
+                    <div>
+                        <input class="form_input phone_n" name="phone" required placeholder="{PHONE}" type="tel"/>
+                    </div>
+                </div>
+                <input type="hidden" name="sub1" value="{subid}" />
+                <input type="hidden" name="px" value="{px}" />
+                <input type="hidden" name="country" value="{country_code}" />
+                <div class="clear"></div>
+                <button class="button order-btn ifr_button sub" style="text-transform: uppercase;" type="submit">
+                    {ORDER}
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
