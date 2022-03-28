@@ -1,7 +1,7 @@
-import re, chardet, json, os
+import re, chardet, os
 from copyright import show
 from files import copy_file, get_currentscript_path, get_files, get_working_path, zip_file
-from bs4 import BeautifulSoup, BeautifulStoneSoup, Comment
+from bs4 import BeautifulSoup, Comment
 from urllib.parse import urlparse
 from settings import SoftSettings, load_settings
 from collections import Counter
