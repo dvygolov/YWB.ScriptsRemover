@@ -243,7 +243,7 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
         print('Removind all webp images...')
         for src in soup.select('source', type='image/webp'):
             src.extract()
-            if src['srcset'].endswith('.webp'):
+            if 'srcset' in src.attrs and src['srcset'].endswith('.webp'):
                 fullSrcPath=join(dirPath,src['srcset'])
                 if os.path.isfile(fullSrcPath):
                     os.remove(fullSrcPath)
