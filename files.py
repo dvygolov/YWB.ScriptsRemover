@@ -50,13 +50,13 @@ def zip_file():
     archivePath = join(dirPath, "prelanding.zip")
     if os.path.isfile(archivePath):
         os.remove(archivePath)
-    with ZipFile(archivePath, "w") as zipObj:
-        for folderName, subfolders, filenames in os.walk(dirPath):
-            for filename in filenames:
-                if filename == "prelanding.zip":
+    with ZipFile(archivePath, "w") as z:
+        for root, dirs, files in os.walk(dirPath):
+            for f in files:
+                if f=="prelanding.zip": 
                     continue
-                filePath = join(folderName, filename)
-                zipObj.write(filePath, basename(filePath))
-                os.remove(filePath)
+                z.write(os.path.join(root, f), 
+                           os.path.relpath(os.path.join(root, f), 
+                                           os.path.join(dirPath, '..')))
 
     print("Zip file prelanding.zip created!")
