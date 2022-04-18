@@ -215,6 +215,8 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
 
     print('Changing product images...')
     for img in soup.findAll('img'):
+        if not 'src' in img.attrs:
+            continue
         if 'scrapbook' in img['src']:
             continue
         if settings.fix_image_path:
