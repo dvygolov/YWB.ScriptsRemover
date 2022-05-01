@@ -215,6 +215,8 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
 
     print('Changing product images...')
     for img in soup.findAll('img'):
+        if not 'src' in img.attrs:
+            continue
         if 'scrapbook' in img['src']:
             continue
         if settings.fix_image_path:
@@ -292,7 +294,7 @@ def main():
     print('1.Remove ALL scripts')
     print('2.Remove Facebook and Google scripts and change JQuery to CDN')
     print('3.Add form inputs and change offer')
-    menu = input('Enter your choice(s):')
+    menu = input('Enter your choice(s):') or '3'
 
     for fname in files:
         print(f'Processing {fname}...')
