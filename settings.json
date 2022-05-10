@@ -8,6 +8,11 @@
     },
     {
       "type": "hidden",
+      "name": "sub2",
+      "value": "{landing_id}"
+    },
+    {
+      "type": "hidden",
       "name": "px",
       "value": "{px}"
     },
