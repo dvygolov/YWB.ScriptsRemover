@@ -1,3 +1,4 @@
+from posixpath import dirname
 import re, chardet, os
 from copyright import show
 from files import copy_file, get_currentscript_path, get_files, get_working_path, zip_file
@@ -7,7 +8,7 @@ from settings import SoftSettings, load_settings
 from collections import Counter
 from PIL import Image
 from pytesseract import pytesseract
-from os.path import join
+from os.path import join, exists
 from copy import copy
 
 path_to_tesseract = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -211,18 +212,20 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
         fAction+='.php'
         form['action']=fAction
 
-        
-
     print('Changing product images...')
     for img in soup.findAll('img'):
         if not 'src' in img.attrs:
             continue
         if 'scrapbook' in img['src']:
             continue
-        if settings.fix_image_path:
-            img['src']=img['src'].split('/')[-1]
-            if 'onerror' in img.attrs:
-                del img['onerror']
+        if 'onerror' in img.attrs:
+            del img['onerror']
+        imgFullPath=join(dirPath, img['src'])
+        if not exists(imgFullPath):
+            imgFileName=img['src'].split('/')[-1]
+            newImgPath=join(dirPath,imgFileName)
+            if exists(newImgPath):
+                img['src']=imgFileName
 
         if newOffer==currentOffer:
             continue
@@ -232,7 +235,6 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
             print(f'Found product image: {imgName}')
             img['src']=f'../common/products/{newOffer.lower().replace(" ","").replace("-","")}.png'
         else:
-            imgFullPath=join(dirPath,img['src'])
             if not os.path.isfile(imgFullPath) or img['src'].split('.')[-1] not in ['png','jpg','jpeg']:
                 continue
             if os.path.isfile(path_to_tesseract):

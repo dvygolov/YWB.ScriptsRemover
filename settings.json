@@ -26,6 +26,5 @@
     "api_address": "",
     "api_key": ""
   },
-  "remove_webp": true,
-  "fix_image_path": true
+  "remove_webp": true
 }
