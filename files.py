@@ -28,9 +28,9 @@ def get_files():
     for root, _, filenames in os.walk(dirPath):
         for filename in filenames:
             if (
-                filename.endswith(".html")
-                or filename.endswith(".htm")
-                or filename.endswith(".php")
+                "index.html" in filename or
+                "index.htm" in filename or
+                "index.php" in filename
             ):
                 fname = os.path.join(root, filename)
                 print("Found file: {}".format(fname))
