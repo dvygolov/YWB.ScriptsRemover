@@ -218,6 +218,8 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
             continue
         if 'scrapbook' in img['src']:
             continue
+        if not 'loading' in img.attrs:
+            img['loading']='lazy'
         if 'onerror' in img.attrs:
             del img['onerror']
         imgFullPath=join(dirPath, img['src'])
