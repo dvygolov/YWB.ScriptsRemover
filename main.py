@@ -133,6 +133,8 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
     dirPath=get_working_path()
 
     htm=soup.find('html')
+    head=soup.select_one('head')
+
     if 'data-scrapbook-create' in htm.attrs:
         del htm.attrs['data-scrapbook-create']
     if 'data-scrapbook-source' in htm.attrs:
@@ -143,6 +145,10 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
     vertical = choose_vertical()
     pp = choose_pp()
 
+    metas = soup.select('meta')
+    if len(list(met for met in metas if 'charset' in met.attrs)) == 0:
+        charsetMeta = soup.new_tag('meta', charset='utf-8')
+        head.append(charsetMeta)
 
     defaultOffer=find_probable_offer(soup)
     currentOffer=input(f'Current offer name (or {defaultOffer} if Enter):') or defaultOffer
@@ -157,7 +163,6 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
     if len(allForms)==0:
         isModalForm=True
         print('No forms found! Inserting modal form...')
-        head=soup.select_one('head')
         curPath=get_currentscript_path()
         fCssPath=join(curPath,'form','form.css')
         copy_file(fCssPath,dirPath)
