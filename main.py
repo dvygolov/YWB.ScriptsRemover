@@ -190,7 +190,7 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
                     continue
                 elif( inpt['name'] in ['phone','tel'] and 
                      'placeholder' in inpt.attrs and 
-                     re.match('^[\s\d\+]+$',inpt['placeholder'])
+                     re.search('^[\s\d\+]+$',inpt['placeholder'])
                      ):
                     del inpt['placeholder']
                     continue
@@ -236,7 +236,8 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
 
         if newOffer==currentOffer:
             continue
-        m=re.match(f'product.*(\.png|\.jpg|\.jpeg)|prod\.png|{currentOffer}\.png', img['src'])
+        regexpString=f'(product.*(\.png|\.jpg|\.jpeg)$)|(prod\.png$)|({currentOffer.lower().replace(" ","").replace("-","")}\.png$)'
+        m=re.search(regexpString, img['src'])
         if m!=None:
             imgName=m.group()
             print(f'Found product image: {imgName}')
@@ -287,7 +288,7 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
 def find_probable_offer(soup:BeautifulSoup)->str:
     texts=soup.findAll(text=True)
     txt=' '.join(t.strip() for t in texts)
-    txt= ' '.join(t.strip(',.:?!;') for t in txt.split() if len(t)>4 and re.match('^[A-Za-z&]+$',t))
+    txt= ' '.join(t.strip(',.:?!;') for t in txt.split() if len(t)>4 and re.search('^[A-Za-z&]+$',t))
     c=Counter(txt.split())
     probable,_= c.most_common(1)[0] 
     if probable=='Cannabis':
