@@ -216,6 +216,8 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
             fAction+=f'_{pp}'
         fAction+='.php'
         form['action']=fAction
+        if not 'method' in form.attrs:
+            form['method'] = 'post'
 
     print('Changing product images...')
     for img in soup.findAll('img'):
