@@ -1,4 +1,3 @@
-from posixpath import dirname
 import re, chardet, os
 from copyright import show
 from files import copy_file, get_currentscript_path, get_files, get_working_path, zip_file
@@ -139,9 +138,7 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
         del htm.attrs['data-scrapbook-create']
     if 'data-scrapbook-source' in htm.attrs:
         del htm.attrs['data-scrapbook-source']
-    defaultCountry='ES'
-    if 'lang' in htm.attrs:
-        defaultCountry=htm['lang'].upper()
+
     vertical = choose_vertical()
     pp = choose_pp()
 
@@ -154,7 +151,11 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
     currentOffer=input(f'Current offer name (or {defaultOffer} if Enter):') or defaultOffer
     newOffer=input('New offer name (Enter if the same):') or currentOffer
     
-    country=input(f'Enter country code (or {defaultCountry} if Enter):') or defaultCountry
+    defaultCountry='ES'
+    if 'lang' in htm.attrs:
+        defaultCountry=htm['lang'].upper()
+    defaultCountry=input(f'Enter current country code (or {defaultCountry} if Enter):') or defaultCountry
+    country=input(f'Enter new offer country code (or {defaultCountry} if Enter):') or defaultCountry
 
     formId='form'
     isModalForm=False
@@ -179,6 +180,12 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
         if 'id' in form.attrs:
             print('Found form ID!')
             formId=form['id']
+
+        frmButton = form.select_one('button')
+        if frmButton != None:
+            if not 'type' in frmButton.attrs:
+                frmButton['type'] = 'submit'
+
         print('Removing unnecessary inputs and selects...')
 
         for select in form.select('select'):
@@ -193,7 +200,9 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
                     if 'name'in inpt.attrs:
                         if 'phone' in inpt['name'] or 'tel' in inpt['name']:
                             inpt['name'] = 'phone'
-                            if 'placeholder' in inpt.attrs and re.search('^[\s\d\+]+$', inpt['placeholder']):
+                            if defaultCountry != country \
+                            and 'placeholder' in inpt.attrs \
+                            and re.search('^[\s\d\+]+$', inpt['placeholder']):
                                 del inpt['placeholder']
                     else:
                         inpt.extract()
