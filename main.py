@@ -179,30 +179,28 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
         if 'id' in form.attrs:
             print('Found form ID!')
             formId=form['id']
-        print('Removing unnecessary inputs...')
-        for inpt in form.select('input'):
-            if 'name'in inpt.attrs:
-                if inpt['name'] not in ['name','phone','tel']:
-                    if 'type' in inpt.attrs and inpt['type'] not in ['button','submit']:
-                        inpt.extract()
-                        continue
-                    inpt.extract()
-                    continue
-                elif( inpt['name'] in ['phone','tel'] and 
-                     'placeholder' in inpt.attrs and 
-                     re.search('^[\s\d\+]+$',inpt['placeholder'])
-                     ):
-                    del inpt['placeholder']
-                    continue
-                else:
-                    continue
-            if 'type' in inpt.attrs and inpt['type'] not in ['button','submit']:
-                inpt.extract()
-                continue
-            else:
-                continue
-            inpt.extract()
+        print('Removing unnecessary inputs and selects...')
 
+        for select in form.select('select'):
+            select.extract()
+
+        for inpt in form.select('input'):
+            if 'type' in inpt.attrs:
+                inType = inpt['type']
+                if inType == 'hidden':
+                    inpt.extract()
+                elif inType in ['text','tel']:
+                    if 'name'in inpt.attrs:
+                        if 'phone' in inpt['name'] or 'tel' in inpt['name']:
+                            inpt['name'] = 'phone'
+                            if 'placeholder' in inpt.attrs and re.search('^[\s\d\+]+$', inpt['placeholder']):
+                                del inpt['placeholder']
+                    else:
+                        inpt.extract()
+                elif inType not in ['button','submit']:
+                    inpt.extract()
+            else:
+                inpt.extract()
                 
         print('Adding necessary inputs...')
         for inpt in settings.inputs:
