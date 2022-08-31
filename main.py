@@ -211,8 +211,17 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
             else:
                 if not 'name'in inpt.attrs:
                     inpt.extract()
-                if not 'phone' in inpt['name'] and not 'tel' in inpt['name']:
-                    inpt.extract()
+                    continue
+                if 'phone' in inpt['name'] or 'tel' in inpt['name']:
+                    inpt['name'] = 'phone'
+                    if defaultCountry != country \
+                    and 'placeholder' in inpt.attrs \
+                    and re.search('^[\s\d\+]+$', inpt['placeholder']):
+                        del inpt['placeholder']
+                    continue
+                if 'name' in inpt['name']:
+                    continue
+                inpt.extract()
                 
         print('Adding necessary inputs...')
         for inpt in settings.inputs:
