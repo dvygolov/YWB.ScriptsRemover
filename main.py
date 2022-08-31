@@ -209,7 +209,10 @@ def change_offer(soup:BeautifulSoup, settings:SoftSettings, encoding:str)->str:
                 elif inType not in ['button','submit']:
                     inpt.extract()
             else:
-                inpt.extract()
+                if not 'name'in inpt.attrs:
+                    inpt.extract()
+                if not 'phone' in inpt['name'] and not 'tel' in inpt['name']:
+                    inpt.extract()
                 
         print('Adding necessary inputs...')
         for inpt in settings.inputs:
