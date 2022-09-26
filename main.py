@@ -115,7 +115,7 @@ def modify_scripts(soup:BeautifulSoup, settings:SoftSettings)->None:
                 s.extract()
 
 def choose_vertical()->str:
-    verticals=["diet","joints","potency","prostatitis"]
+    verticals=["diet","joints","potency","prostatitis","hypertone","diabetes"]
     for i,v in enumerate(verticals):
         print(f'{i+1}. {v}')
     chosen=input('Choose your vertical (Enter if none):')
