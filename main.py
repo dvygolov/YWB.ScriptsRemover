@@ -65,6 +65,15 @@ def is_local_jquery(str):
         return True
     return False
 
+def is_local_jquery_countdown(str):
+    if str == None:
+       return False
+    if bool(urlparse(str).netloc):
+        return False
+    if str.endswith('jquery.countdown.js') or str.endswith('jquery.countdown.min.js'):
+        return True
+    return False
+
 def is_google_tag(tag):
     if tag.string== None:
         return False
@@ -113,6 +122,12 @@ def modify_scripts(soup:BeautifulSoup, settings:SoftSettings)->None:
             else:
                 print('Removing duplicate JQuery...')
                 s.extract()
+        elif is_local_jquery_countdown(s.get('src')):
+            print(f'Found local JQuery Countdown {s.get("src")}, modifying...')
+            fullJqueryCntPath=join(get_working_path(),s['src'])
+            if os.path.isfile(fullJqueryCntPath):
+                os.remove(fullJqueryCntPath)
+            s['src'] = settings.jquerycountdown
 
 def choose_vertical()->str:
     verticals=["diet","joints","potency","prostatitis","hypertone","diabetes"]

@@ -1,5 +1,6 @@
 {
   "jquery": "https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js",
+  "jquerycountdown": "https://cdnjs.cloudflare.com/ajax/libs/jquery.countdown/2.2.0/jquery.countdown.min.js",
   "inputs": [
     {
       "type": "hidden",
