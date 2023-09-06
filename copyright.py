@@ -11,7 +11,7 @@ def show():
     print("         |___/             https://yellowweb.top                 ")
     print()
     print("If you like this script, PLEASE DONATE!")
-    print("WebMoney: Z182653170916")
+    print("USDT TRC20: TKeNEVndhPSKXuYmpEwF4fVtWUvfCnWmra")
     print("Bitcoin: bc1qqv99jasckntqnk0pkjnrjtpwu0yurm0qd0gnqv")
     print("Ethereum: 0xBC118D3FDE78eE393A154C29A4545c575506ad6B")
     print()
