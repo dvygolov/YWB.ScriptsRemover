@@ -10,7 +10,6 @@
           |___/             https://yellowweb.top                 
 
 If you like this script, PLEASE DONATE!  
-WebMoney: Z182653170916  
 ```
 
 [Support this project](https://yellowweb.top/donate)
